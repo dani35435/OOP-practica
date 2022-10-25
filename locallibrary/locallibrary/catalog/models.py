@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 import uuid
+from django.contrib.auth.models import User
+from datetime import date
 
 
 class Genre(models.Model):
@@ -32,26 +34,38 @@ class Book(models.Model):
 
 class BookInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4,
-                          help_text="Unique ID for this particular book across wholelibrary")
-    book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True)
+                          help_text="Unique ID for this particular book across whole library")
+    book = models.ForeignKey('Book', on_delete=models.RESTRICT, null=True)
     imprint = models.CharField(max_length=200)
     due_back = models.DateField(null=True, blank=True)
+    borrower = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    @property
+    def is_overdue(self):
+        if self.due_back and date.today() > self.due_back:
+            return True
+        return False
 
     LOAN_STATUS = (
-        ('m', 'Maintenance'),
+        ('d', 'Maintenance'),
         ('o', 'On loan'),
         ('a', 'Available'),
         ('r', 'Reserved'),
     )
 
-    status = models.CharField(max_length=1, choices=LOAN_STATUS,
-                              blank=True, default='m', help_text='Book availability')
+    status = models.CharField(
+        max_length=1,
+        choices=LOAN_STATUS,
+        blank=True,
+        default='d',
+        help_text='Book availability')
 
     class Meta:
-        ordering = ["due_back"]
+        ordering = ['due_back']
+        permissions = (("can_mark_returned", "Set book as returned"),)
 
     def __str__(self):
-        return '%s (%s)' % (self.id, self.book.title)
+        return '{0} ({1})'.format(self.id, self.book.title)
 
 
 class Author(models.Model):
@@ -65,4 +79,3 @@ class Author(models.Model):
 
     def __str__(self):
         return '{0}, {1}'.format(self.last_name, self.first_name)
-

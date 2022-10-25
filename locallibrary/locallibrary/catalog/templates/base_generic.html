@@ -3,41 +3,48 @@
 <head>
 
 
-<title>{% block title %}default value{% endblock title %}</title>
+    <title>{% block title %}default value{% endblock title %}</title>
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-  <!-- Добавление дополнительного статического CSS файла -->
-  {% load static %}
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- Добавление дополнительного статического CSS файла -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body>
 
-  <div class="container-fluid">
+<div class="container-fluid">
 
     <div class="row">
-      <div class="col-sm-2">
-      {% block sidebar %}
-      <ul class="sidebar-nav">
-          <li><a href="{% url 'index' %}">Home</a></li>
-          <li><a href="{% url 'books' %}">All books</a></li>
-          <li><a href="{% url 'authors' %}">{{ book.author }}</a></li>
-          {% load static %}
-          <img src="{% static 'catalog/images/local_library_model_uml.png' %}" alt="My image" style="width:555px;height:540px;"/>
-      </ul>
-     {% endblock %}
-      </div>
-      <div class="col-sm-10 ">
-      {% block content %}{% endblock %}
+        <div class="col-sm-2">
+            {% block sidebar %}
+            <ul class="sidebar-nav">
+                <li><a href="{% url 'index' %}">Домой</a></li>
+                <li><a href="{% url 'books' %}">Все книги</a></li>
+                <li><a href="{% url 'authors' %}">Все авторы</a></li>
+                {% if user.is_authenticated %}
+                <li>User: {{ user.get_username }}</li>
+                <li><a href="{% url 'my-borrowed' %}">Мной позаимствовано</a></li>
+                <li><a href="{% url 'logout'%}?next={{request.path}}">Выйти</a></li>
+                {% else %}
+                <li><a href="{% url 'login'%}?next={{request.path}}">Логин</a></li>
+                {% endif %}
+                {% load static %}
+                <img src="{% static 'catalog/images/local_library_model_uml.png' %}" alt="My image" style="width:555px;height:540px;"/>
+            </ul>
+            {% endblock %}
+        </div>
+        <div class="col-sm-10 ">
+            {% block content %}{% endblock %}
 
-          {% block pagination %}
+            {% block pagination %}
             {% if is_paginated %}
-                <div class="pagination">
+            <div class="pagination">
                     <span class="page-links">
                         {% if page_obj.has_previous %}
                             <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">previous</a>
@@ -49,14 +56,14 @@
                             <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">next</a>
                         {% endif %}
                     </span>
-                </div>
+            </div>
             {% endif %}
-          {% endblock %}
+            {% endblock %}
 
 
-      </div>
+        </div>
     </div>
 
-  </div>
+</div>
 </body>
 </html>
